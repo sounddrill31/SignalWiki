@@ -3,7 +3,7 @@
 <template>
   <div class="wasm-app">
     
-    <div :class="['custom-block', wasmReady ? 'tip' : 'warning']">
+    <div v-if="showStatus" :class="['custom-block', wasmReady ? 'tip' : 'warning']">
       <p class="custom-block-title">Status</p>
       <p>{{ wasmReady ? `${waveName} Module Ready!` : `Downloading ${waveName} WebAssembly...` }}</p>
     </div>
@@ -33,10 +33,10 @@
 
     <div class="actions">
       <button class="vp-btn brand" :disabled="!wasmReady" @click="generateAndPlot">
-        1. Generate & Plot
+        Generate & Plot
       </button>
       <button class="vp-btn alt" :disabled="!hasData" @click="playSound">
-        2. Play Sound
+        Play Sound
       </button>
     </div>
 
@@ -55,6 +55,9 @@ const props = defineProps({
 
 const wasmReady = ref(false)
 const hasData = ref(false)
+const showStatus = ref(true)  // <-- Added for auto-hide status
+const isPlaying = ref(false)  // <-- Added for playback lock
+
 const amp = ref(0.2)
 const freq = ref(440)
 const dur = ref(1.0)
@@ -98,6 +101,7 @@ onMounted(async () => {
     })
 
     wasmReady.value = true
+    setTimeout(() => { showStatus.value = false }, 5000) // <-- Hides after 5 seconds
   } catch (error) {
     console.error(`Failed to load ${props.waveName} WebAssembly:`, error)
   }
@@ -135,7 +139,9 @@ const generateAndPlot = () => {
 }
 
 const playSound = () => {
-  if (!audioData) return
+  if (!audioData || isPlaying.value) return // <-- Check if already playing
+  isPlaying.value = true                    // <-- Lock the button
+
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
   const buffer = audioCtx.createBuffer(1, audioData.length, fs.value)
   const channelData = buffer.getChannelData(0)
@@ -147,6 +153,12 @@ const playSound = () => {
   const source = audioCtx.createBufferSource()
   source.buffer = buffer
   source.connect(audioCtx.destination)
+  
+  // <-- Unlock the button when audio finishes
+  source.onended = () => {
+    isPlaying.value = false
+  }
+  
   source.start()
 }
 </script>

@@ -1,5 +1,7 @@
 ---
 title: Sinusoidal Waves Analysis
-sidebarOrder: 1
+sidebarOrder: 2
 ---
 
+
+nothing here yet

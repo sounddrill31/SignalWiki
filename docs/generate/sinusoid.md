@@ -7,7 +7,7 @@ sidebarOrder: 1
 <!-- LLM assistance used for autowrap.py and the vueJS snippet -->
 
 <script setup>
-import Generate from '../../.vitepress/components/Generate.vue'
+import Generate from '../.vitepress/components/Generate.vue'
 </script>
 
 <Generate 

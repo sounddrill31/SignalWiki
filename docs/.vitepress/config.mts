@@ -4,7 +4,7 @@ import { withSidebar } from 'vitepress-sidebar'
 
 // https://vitepress.dev/reference/site-config
 const vitepressConfigs = {
-  title: "Signals Project 24",
+  title: "Signal Processing Project",
   description: "Audio Waveform Generator and Analyzer",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -22,9 +22,7 @@ const vitepressConfigs = {
     //    ]
     //  }
     //],
-    rewrites: {
-      'generate/(.*)': 'generate/wave/(.*)'
-    }
+    cleanUrls: true,
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
