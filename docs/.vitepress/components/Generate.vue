@@ -35,8 +35,8 @@
       <button class="vp-btn brand" :disabled="!wasmReady" @click="generateAndPlot">
         Generate & Plot
       </button>
-      <button class="vp-btn alt" :disabled="!hasData" @click="playSound">
-        Play Sound
+      <button class="vp-btn alt" :disabled="!hasData || isPlaying" @click="playSound">
+        {{ isPlaying ? 'Playing...' : 'Play Sound' }}
       </button>
     </div>
 
