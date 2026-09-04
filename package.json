@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "plotly.js-dist-min": "^4.0.0",
+    "vitepress-sidebar": "^1.39.0",
+    "vue": "^3.5.42"
+  },
+  "devDependencies": {
+    "vitepress": "^2.0.0-alpha.20"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  }
+}
