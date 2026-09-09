@@ -118,6 +118,13 @@
   }
 }
 
+/* Override vitepress features tab to support 5 blocks */
+@media (min-width: 960px) {
+  .VPFeatures .items {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+
 /**
  * Component: Custom Block
  * -------------------------------------------------------------------------- */

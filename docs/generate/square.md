@@ -1,6 +1,6 @@
 ---
-title: Sinusoid Waves Generation
-order: 1
+title: Square Waves Generation
+order: 2
 ---
 
 # Sinusoidal Wave Generation (WIP)
@@ -11,7 +11,7 @@ import Generate from '../.vitepress/components/Generate.vue'
 </script>
 
 <Generate 
-  remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/sine/" 
-  functionName="genSineLogic"
-  waveName="Sine Wave"
+  remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/square/" 
+  functionName="genSquareLogic"
+  waveName="Square Wave"
 />

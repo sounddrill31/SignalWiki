@@ -34,6 +34,11 @@ export default defineConfig(
   withSidebar(vitepressConfigs, {
     documentRootPath: '/docs',
     collapsed: false,
+    sortMenusByFrontmatterOrder: true,
+    frontmatterOrderDefaultValue: 0,
+    useTitleFromFrontmatter: true,
+    frontmatterTitleFieldName: 'sidebarTitle',
+    includeFolderIndexFile: true,
     useTitleFromFileHeading: true,
   })
 )
