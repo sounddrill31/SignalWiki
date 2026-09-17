@@ -3,7 +3,7 @@ title: Triangle Waves Generation
 order: 3
 ---
 
-# Sinusoidal Wave Generation
+# Sinusoidal Wave
 <!-- LLM assistance used for autowrap.py and the vueJS snippet -->
 
 <script setup>
@@ -15,3 +15,34 @@ import Generate from '../.vitepress/components/Generate.vue'
   functionName="genTriangleLogic"
   waveName="Triangle Wave"
 />
+
+# Core Matlab Function
+
+```Matlab
+%% SImple matlab function script to generate Triangle Wave
+
+%#codegen
+
+function [t,x,samples,cycles] = genTriangleLogic(A,f,duration,Fs)
+
+% hack to allow memory size of t and x to grow
+coder.varsize('t', [1, 2000000], [false, true]);
+coder.varsize('x', [1, 2000000], [false, true]);
+
+
+% We're using the time vector t to generate enough slots, one for each
+% sample based on the frequency and duration
+t = 0:1/Fs:duration;
+t = t(1:end-1);
+% now we simply use to sawtooth function to generate a wave with w = 2*pi*f*t and at half interval(where A is the amplitude) 
+x = A*sawtooth(2*pi*f*t,0.5);
+% Normalize the wave to ensure it fits within the amplitude range
+x = x/max(abs(x));
+
+% take samples from first to cycles for initial plotting
+cycles = 2;
+samples = round(cycles*Fs/f);
+samples = min(samples,length(x));
+
+end
+```
