@@ -11,7 +11,7 @@ features:
   - title: Generate Signal
     link: /generate
     details: "Click here to generate a signal"
-  - title: Analyze Signal(WIP)
+  - title: Analyze Signal
     link: /analysis
     details: "Click here to analyze a signal"
 
