@@ -18,8 +18,8 @@
         <input type="number" v-model.number="freq" step="1">
       </div>
       <div class="input-group">
-        <label>Duty Cycle</label>
-        <input type="number" v-model.number="duty" step="0.05" max="1.0" min="0.01">
+        <label>Duty Cycle(%)</label>
+        <input type="number" v-model.number="duty" step="1" max="100" min="0.1">
       </div>
       <div class="input-group">
         <label>Duration (s)</label>
