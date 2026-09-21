@@ -3,7 +3,7 @@ title: Triangle Waves Generation
 order: 3
 ---
 
-# Sinusoidal Wave
+# Triangle Wave
 <!-- LLM assistance used for autowrap.py and the vueJS snippet -->
 
 <script setup>
