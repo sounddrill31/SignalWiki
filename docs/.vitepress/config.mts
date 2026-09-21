@@ -25,7 +25,7 @@ const vitepressConfigs = {
     cleanUrls: true,
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/sounddrill31/SignalWiki' }
     ]
   }
 }
