@@ -3,7 +3,7 @@ title: Square Waves Generation
 order: 2
 ---
 
-# Triangle Wave
+# Square Wave
 <!-- LLM assistance used for autowrap.py and the vueJS snippet -->
 
 <script setup>
