@@ -114,7 +114,7 @@ const generateAndPlot = () => {
   
   audioData = new Float64Array(result.x.length)
   for(let i = 0; i < result.x.length; i++) {
-      audioData[i] = result.x[i] * amp.value
+      audioData[i] = result.x[i]
   }
   hasData.value = true
 
