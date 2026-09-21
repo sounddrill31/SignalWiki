@@ -48,7 +48,7 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 
 const props = defineProps({
-  remoteUrl: { type: String, default: 'https://cdn.jsdelivr.net/gh/sounddrill31/analysis-signalgenerate@main/analyze/' },
+  remoteUrl: { type: String, default: 'https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/analyze/' },
   functionName: { type: String, default: 'genAnalysisLogic' }
 })
 

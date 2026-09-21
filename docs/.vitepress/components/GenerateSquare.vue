@@ -40,9 +40,14 @@
       <button class="vp-btn alt" :disabled="!hasData || isPlaying" @click="playSound">
         {{ isPlaying ? 'Playing...' : 'Play Sound' }}
       </button>
+      <button class="vp-btn alt" :disabled="!hasData || !analysisReady" @click="runAnalysis">
+        {{ analysisReady ? 'Analyze' : 'Loading Analysis...' }}
+      </button>
     </div>
 
     <div ref="plotDiv" class="plot-container"></div>
+    <div ref="freqDiv" class="plot-container" v-show="analyzed" style="margin-top: 20px;"></div>
+    <div ref="stftDiv" class="plot-container" v-show="analyzed" style="margin-top: 20px;"></div>
   </div>
 </template>
 
@@ -62,6 +67,9 @@ const hasData = ref(false)
 const showStatus = ref(true)  // <-- Added for auto-hide status
 const isPlaying = ref(false)  // <-- Added for playback lock
 
+const analysisReady = ref(false)
+let analysisWasm = null
+
 const amp = ref(0.2)
 const freq = ref(440)
 const duty = ref(50)
@@ -76,29 +84,39 @@ let Plotly = null
 let wasmInstance = null 
 
 // Helper function to load the script as a Promise
-const loadWasmScript = (url) => {
+const loadWasmScript = (url, cacheKey) => {
   return new Promise((resolve, reject) => {
-    // If the script is already in the document, resolve immediately
-    if (document.querySelector(`script[src="${url}"]`)) {
-      return resolve()
+    window.__WASM_FACTORIES__ = window.__WASM_FACTORIES__ || {}
+    
+    // If we already loaded this specific WASM in another tab, return it instantly
+    if (window.__WASM_FACTORIES__[cacheKey]) {
+      return resolve(window.__WASM_FACTORIES__[cacheKey])
     }
+
     const script = document.createElement('script')
     script.src = url
-    script.onload = resolve
+    script.onload = () => {
+      // Save the factory to our safe persistent cache
+      window.__WASM_FACTORIES__[cacheKey] = window.createWasmModule
+      // Nuke the global so the next script doesn't inherit/collide with it
+      window.createWasmModule = undefined 
+      resolve(window.__WASM_FACTORIES__[cacheKey])
+    }
     script.onerror = reject
     document.body.appendChild(script)
   })
 }
 
+// Replace your onMounted with this:
 onMounted(async () => {
   Plotly = (await import('plotly.js-dist-min')).default
 
   try {
-    // 1. Fetch the remote index.js
-    await loadWasmScript(props.remoteUrl + 'index.js?t=' + Date.now())
+    // 1. Fetch/Cache the remote index.js (No more Date.now() bypass)
+    const generatorFactory = await loadWasmScript(props.remoteUrl + 'index.js', props.waveName)
     
-    // 2. Initialize the isolated Wasm module using the exported function!
-    wasmInstance = await window.createWasmModule({
+    // 2. Initialize the isolated Wasm module using the cached factory
+    wasmInstance = await generatorFactory({
       locateFile: function(path) {
         if (path.endsWith('.wasm')) return props.remoteUrl + path
         return path
@@ -106,7 +124,24 @@ onMounted(async () => {
     })
 
     wasmReady.value = true
-    setTimeout(() => { showStatus.value = false }, 5000) // <-- Hides after 5 seconds
+
+    setTimeout(async () => {
+      try {
+        const url = 'https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/analyze/'
+        
+        // 3. Fetch/Cache the analysis script
+        const analyzerFactory = await loadWasmScript(url + 'index.js', 'analyzer_module')
+        
+        // 4. Initialize analyzer safely
+        analysisWasm = await analyzerFactory({
+          locateFile: (path) => path.endsWith('.wasm') ? url + path : path
+        })
+        analysisReady.value = true
+      } catch (err) {
+        console.error("Analysis WASM background load failed:", err)
+      }
+    }, 500)
+
   } catch (error) {
     console.error(`Failed to load ${props.waveName} WebAssembly:`, error)
   }
@@ -166,6 +201,39 @@ const playSound = () => {
   
   source.start()
 }
+
+const analyzed = ref(false)
+const freqDiv = ref(null)
+const stftDiv = ref(null)
+
+const runAnalysis = async () => {
+  if (!audioData || !analysisWasm) return
+  
+  const res = analysisWasm.genAnalysisLogic(audioData, fs.value)
+  const isDark = document.documentElement.classList.contains('dark')
+  const textColor = isDark ? '#fffff5' : '#3c3c43' 
+  const layout = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: textColor }, margin: { t: 30, b: 40, l: 50, r: 20 } }
+
+  Plotly.newPlot(freqDiv.value, [{ 
+    x: Array.from(res.freq), y: Array.from(res.fftMagnitude), type: 'scatter', line: { color: 'var(--vp-c-success-1)' } 
+  }], { ...layout, title: 'Frequency Domain (FFT)' })
+
+  const zMatrix = []
+  const numFreqs = res.stftFreq.length
+  const numTimes = res.stftTime.length
+  for (let f = 0; f < numFreqs; f++) {
+    const row = []
+    for (let t = 0; t < numTimes; t++) row.push(res.stftMagnitude[f + t * numFreqs])
+    zMatrix.push(row)
+  }
+
+  Plotly.newPlot(stftDiv.value, [{ 
+    x: Array.from(res.stftTime), y: Array.from(res.stftFreq), z: zMatrix, type: 'heatmap', colorscale: 'Viridis' 
+  }], { ...layout, title: 'Short-Time Fourier Transform (STFT)' })
+
+  analyzed.value = true
+}
+
 </script>
 
 <style scoped>
