@@ -24,9 +24,7 @@
       <div class="input-group">
         <label>Sample Rate</label>
         <select v-model.number="fs">
-            <option value="8000">8000 Hz</option>
-            <option value="16000">16000 Hz</option>
-            <option value="44100">44100 Hz</option>
+        <option v-for="rate in sampleRates" :key="rate" :value="rate">{{ rate }} Hz</option> 
         </select>
       </div>
     </div>
@@ -50,7 +48,8 @@ import { ref, onMounted, defineProps } from 'vue'
 const props = defineProps({
   remoteUrl: { type: String, required: true },
   functionName: { type: String, required: true },
-  waveName: { type: String, default: 'Wave' }
+  waveName: { type: String, default: 'Wave' },
+  sampleRates: { type: Array, default: () => [8000, 16000, 44100] }
 })
 
 const wasmReady = ref(false)
@@ -61,7 +60,7 @@ const isPlaying = ref(false)  // <-- Added for playback lock
 const amp = ref(0.2)
 const freq = ref(440)
 const dur = ref(1.0)
-const fs = ref(44100)
+const fs = ref(props.sampleRates.includes(44100) ? 44100 : props.sampleRates[0])
 
 let audioData = null
 const plotDiv = ref(null)

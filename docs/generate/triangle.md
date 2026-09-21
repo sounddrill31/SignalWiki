@@ -14,6 +14,7 @@ import Generate from '../.vitepress/components/Generate.vue'
   remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/triangle/" 
   functionName="genTriangleLogic"
   waveName="Triangle Wave"
+  :sampleRates="[8000, 16000, 44100, 192000, 200000]"
 />
 
 # Core Matlab Function

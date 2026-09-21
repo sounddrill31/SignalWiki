@@ -11,9 +11,10 @@ import Generate from '../.vitepress/components/Generate.vue'
 </script>
 
 <Generate 
-  remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/sinc/" 
+remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/sinc/" 
   functionName="genSincLogic"
   waveName="Sinc Wave"
+  :sampleRates="[8000, 16000, 44100, 192000, 700000]"
 />
 
 <!--TODO: Expl on how it works-->

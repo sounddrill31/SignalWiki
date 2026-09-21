@@ -14,6 +14,7 @@ import Generate from '../.vitepress/components/GenerateSquare.vue'
   remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/square/" 
   functionName="genSquareLogic"
   waveName="Square Wave"
+  :sampleRates="[8000, 16000, 44100, 192000, 5000000]"
 />
 
 # Core Matlab Function

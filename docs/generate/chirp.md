@@ -14,6 +14,7 @@ import Generate from '../.vitepress/components/GenerateChirp.vue'
   remoteUrl="https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/generate/chirp/" 
   functionName="genChirpLogic"
   waveName="Chirp Wave"
+  :sampleRates="[8000, 16000, 44100, 192000, 700000]"
 />
 
 <!-- TODO: Expl on how it works-->
