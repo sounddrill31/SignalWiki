@@ -27,6 +27,8 @@
             <option value="8000">8000 Hz</option>
             <option value="16000">16000 Hz</option>
             <option value="44100">44100 Hz</option>
+            <option value="176400">176400 Hz</option>
+            <option value="1764000">1764000 Hz</option>
         </select>
       </div>
     </div>
@@ -61,7 +63,7 @@ const isPlaying = ref(false)  // <-- Added for playback lock
 const amp = ref(0.2)
 const freq = ref(440)
 const dur = ref(1.0)
-const fs = ref(44100)
+const fs = ref(1764000)
 
 let audioData = null
 const plotDiv = ref(null)
