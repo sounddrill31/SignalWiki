@@ -64,7 +64,7 @@ const isPlaying = ref(false)  // <-- Added for playback lock
 
 const amp = ref(0.2)
 const freq = ref(440)
-const duty = ref(0.5)
+const duty = ref(50)
 const dur = ref(1.0)
 const fs = ref(props.sampleRates.includes(44100) ? 44100 : props.sampleRates[0])
 
