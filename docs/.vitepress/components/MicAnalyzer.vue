@@ -8,7 +8,7 @@
       <p class="custom-block-title">System Status</p>
       <p>{{ statusMessage }}</p>
       <p v-if="micError" style="color: var(--vp-c-danger-1); margin-top: 8px;">
-        Microphone access denied. Please check your browser permissions.
+        Could not read that audio. Check your microphone permission or pick a decodable audio file.
       </p>
     </div>
 
@@ -27,6 +27,20 @@
         @click="stopRecording"
       >
         Stop & Analyze
+      </button>
+      <input
+        ref="fileInput"
+        type="file"
+        accept="audio/*"
+        style="display: none"
+        @change="handleUpload"
+      />
+      <button
+        class="vp-btn alt"
+        :disabled="!wasmReady || isRecording || isAnalyzing"
+        @click="fileInput.click()"
+      >
+        Upload Audio
       </button>
     </div>
 
@@ -74,6 +88,7 @@ const statusColor = computed(() => {
 })
 
 // DOM Refs
+const fileInput = ref(null)
 const timeDiv = ref(null)
 const freqDiv = ref(null)
 const stftDiv = ref(null)
@@ -152,10 +167,33 @@ const stopRecording = () => {
   }
 }
 
+const handleUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  micError.value = false
+  hasData.value = false
+  if (audioUrl.value) {
+    URL.revokeObjectURL(audioUrl.value)
+    audioUrl.value = null
+  }
+  isAnalyzing.value = true
+  try {
+    await analyzeBlob(file)
+  } catch (err) {
+    console.error("Analysis failed:", err)
+    micError.value = true
+    isAnalyzing.value = false
+  } finally {
+    event.target.value = ''
+  }
+}
+
 const processRecording = async () => {
-  const audioBlob = new Blob(audioChunks)
-  
-  // Assign the object URL so the user can play back their recording instantly
+  await analyzeBlob(new Blob(audioChunks))
+}
+
+const analyzeBlob = async (audioBlob) => {
+  // Assign the object URL so the user can play back the audio instantly
   audioUrl.value = URL.createObjectURL(audioBlob)
   
   const arrayBuffer = await audioBlob.arrayBuffer()
