@@ -40,6 +40,9 @@
       <button class="vp-btn alt" :disabled="!hasData || isPlaying" @click="playSound">
         {{ isPlaying ? 'Playing...' : 'Play Sound' }}
       </button>
+      <button class="vp-btn alt" :disabled="!hasData" @click="downloadWave">
+        Download WAV
+      </button>
       <button class="vp-btn alt" :disabled="!hasData || !analysisReady" @click="runAnalysis">
         {{ analysisReady ? 'Analyze' : 'Loading Analysis...' }}
       </button>
@@ -197,6 +200,59 @@ const playSound = () => {
   source.start()
 }
 
+const downloadWave = () => {
+  if (!audioData) return
+
+  const sampleRate = fs.value
+  const numChannels = 1
+  const bitsPerSample = 16
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8
+  const blockAlign = (numChannels * bitsPerSample) / 8
+  const dataSize = audioData.length * numChannels * (bitsPerSample / 8)
+  const chunkSize = 36 + dataSize
+
+  const wavBuffer = new ArrayBuffer(44 + dataSize)
+  const view = new DataView(wavBuffer)
+
+  const writeString = (view, offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i))
+    }
+  }
+
+  writeString(view, 0, 'RIFF')
+  view.setUint32(4, chunkSize, true)
+  writeString(view, 8, 'WAVE')
+
+  writeString(view, 12, 'fmt ')
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true)
+  view.setUint16(22, numChannels, true)
+  view.setUint32(24, sampleRate, true)
+  view.setUint32(28, byteRate, true)
+  view.setUint16(32, blockAlign, true)
+  view.setUint16(34, bitsPerSample, true)
+
+  writeString(view, 36, 'data')
+  view.setUint32(40, dataSize, true)
+
+  let offset = 44
+  for (let i = 0; i < audioData.length; i++, offset += 2) {
+    let s = Math.max(-1, Math.min(1, audioData[i]))
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+  }
+
+  const blob = new Blob([view], { type: 'audio/wav' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.style.display = 'none'
+  a.href = url
+  a.download = `${props.waveName.toLowerCase()}_${fStart.value}_${fEnd.value}hz.wav`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 
 const analyzed = ref(false)
 const freqDiv = ref(null)

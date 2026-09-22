@@ -36,6 +36,9 @@
       <button class="vp-btn alt" :disabled="!hasData || isPlaying" @click="playSound">
         {{ isPlaying ? 'Playing...' : 'Play Sound' }}
       </button>
+      <button class="vp-btn alt" :disabled="!hasData" @click="downloadWave">
+        Download WAV
+      </button>
       <button class="vp-btn alt" :disabled="!hasData || !analysisReady" @click="runAnalysis">
         {{ analysisReady ? 'Analyze' : 'Loading Analysis...' }}
       </button>
@@ -60,8 +63,8 @@ const props = defineProps({
 
 const wasmReady = ref(false)
 const hasData = ref(false)
-const showStatus = ref(true)  // <-- Added for auto-hide status
-const isPlaying = ref(false)  // <-- Added for playback lock
+const showStatus = ref(true) 
+const isPlaying = ref(false) 
 
 const analysisReady = ref(false)
 let analysisWasm = null
@@ -78,12 +81,10 @@ let Plotly = null
 // Store the isolated Wasm instance locally, NOT on window.Module
 let wasmInstance = null 
 
-// Helper function to load the script as a Promise
 const loadWasmScript = (url, cacheKey) => {
   return new Promise((resolve, reject) => {
     window.__WASM_FACTORIES__ = window.__WASM_FACTORIES__ || {}
     
-    // If we already loaded this specific WASM in another tab, return it instantly
     if (window.__WASM_FACTORIES__[cacheKey]) {
       return resolve(window.__WASM_FACTORIES__[cacheKey])
     }
@@ -91,9 +92,7 @@ const loadWasmScript = (url, cacheKey) => {
     const script = document.createElement('script')
     script.src = url
     script.onload = () => {
-      // Save the factory to our safe persistent cache
       window.__WASM_FACTORIES__[cacheKey] = window.createWasmModule
-      // Nuke the global so the next script doesn't inherit/collide with it
       window.createWasmModule = undefined 
       resolve(window.__WASM_FACTORIES__[cacheKey])
     }
@@ -102,15 +101,12 @@ const loadWasmScript = (url, cacheKey) => {
   })
 }
 
-// Replace your onMounted with this:
 onMounted(async () => {
   Plotly = (await import('plotly.js-dist-min')).default
 
   try {
-    // 1. Fetch/Cache the remote index.js (No more Date.now() bypass)
     const generatorFactory = await loadWasmScript(props.remoteUrl + 'index.js', props.waveName)
     
-    // 2. Initialize the isolated Wasm module using the cached factory
     wasmInstance = await generatorFactory({
       locateFile: function(path) {
         if (path.endsWith('.wasm')) return props.remoteUrl + path
@@ -124,10 +120,8 @@ onMounted(async () => {
       try {
         const url = 'https://cdn.jsdelivr.net/gh/sounddrill31/signalgen-archive@archive/wave/analyze/'
         
-        // 3. Fetch/Cache the analysis script
         const analyzerFactory = await loadWasmScript(url + 'index.js', 'analyzer_module')
         
-        // 4. Initialize analyzer safely
         analysisWasm = await analyzerFactory({
           locateFile: (path) => path.endsWith('.wasm') ? url + path : path
         })
@@ -143,7 +137,6 @@ onMounted(async () => {
 })
 
 const generateAndPlot = () => {
-  // Use our local wasmInstance instead of window.Module
   if (!wasmInstance || !wasmInstance[props.functionName]) return
 
   const result = wasmInstance[props.functionName](amp.value, freq.value, dur.value, fs.value)
@@ -174,8 +167,8 @@ const generateAndPlot = () => {
 }
 
 const playSound = () => {
-  if (!audioData || isPlaying.value) return // <-- Check if already playing
-  isPlaying.value = true                    // <-- Lock the button
+  if (!audioData || isPlaying.value) return 
+  isPlaying.value = true                 
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
   const buffer = audioCtx.createBuffer(1, audioData.length, fs.value)
@@ -189,7 +182,6 @@ const playSound = () => {
   source.buffer = buffer
   source.connect(audioCtx.destination)
   
-  // <-- Unlock the button when audio finishes
   source.onended = () => {
     isPlaying.value = false
   }
@@ -197,6 +189,59 @@ const playSound = () => {
   source.start()
 }
 
+const downloadWave = () => {
+  if (!audioData) return
+
+  const sampleRate = fs.value
+  const numChannels = 1
+  const bitsPerSample = 16
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8
+  const blockAlign = (numChannels * bitsPerSample) / 8
+  const dataSize = audioData.length * numChannels * (bitsPerSample / 8)
+  const chunkSize = 36 + dataSize
+
+  const wavBuffer = new ArrayBuffer(44 + dataSize)
+  const view = new DataView(wavBuffer)
+
+  const writeString = (view, offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i))
+    }
+  }
+
+  writeString(view, 0, 'RIFF')
+  view.setUint32(4, chunkSize, true)
+  writeString(view, 8, 'WAVE')
+
+  writeString(view, 12, 'fmt ')
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true)
+  view.setUint16(22, numChannels, true)
+  view.setUint32(24, sampleRate, true)
+  view.setUint32(28, byteRate, true)
+  view.setUint16(32, blockAlign, true)
+  view.setUint16(34, bitsPerSample, true)
+
+  writeString(view, 36, 'data')
+  view.setUint32(40, dataSize, true)
+
+  let offset = 44
+  for (let i = 0; i < audioData.length; i++, offset += 2) {
+    let s = Math.max(-1, Math.min(1, audioData[i]))
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+  }
+
+  const blob = new Blob([view], { type: 'audio/wav' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.style.display = 'none'
+  a.href = url
+  a.download = `${props.waveName.toLowerCase()}_${freq.value}hz.wav`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 
 const analyzed = ref(false)
 const freqDiv = ref(null)
