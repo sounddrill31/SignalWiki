@@ -165,8 +165,8 @@ const generateAndPlot = () => {
       line: { color: 'var(--vp-c-brand-1)', width: 2 } 
   }], { 
       title: `${props.waveName} (${freq.value} Hz)`,
-      xaxis: { title: 'Time (s)', color: textColor },
-      yaxis: { title: 'Amplitude', range: [-1.2, 1.2], color: textColor },
+      xaxis: { title: { text: 'Time (s)' }, color: textColor },
+      yaxis: { title: { text: 'Amplitude' }, range: [-1.2, 1.2], color: textColor },
       margin: { t: 40, b: 40, l: 50, r: 20 },
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'transparent'
@@ -212,7 +212,7 @@ const runAnalysis = async () => {
 
   Plotly.newPlot(freqDiv.value, [{ 
     x: Array.from(res.freq), y: Array.from(res.fftMagnitude), type: 'scatter', line: { color: 'var(--vp-c-success-1)' } 
-  }], { ...layout, title: 'Frequency Domain (FFT)' })
+  }], { ...layout, title: 'Frequency Domain (FFT)', xaxis: { title: { text: 'Frequency (Hz)' } }, yaxis: { title: { text: 'Magnitude' } } })
 
   const zMatrix = []
   const numFreqs = res.stftFreq.length
@@ -225,7 +225,7 @@ const runAnalysis = async () => {
 
   Plotly.newPlot(stftDiv.value, [{ 
     x: Array.from(res.stftTime), y: Array.from(res.stftFreq), z: zMatrix, type: 'heatmap', colorscale: 'Viridis' 
-  }], { ...layout, title: 'Short-Time Fourier Transform (STFT)' })
+  }], { ...layout, title: 'Short-Time Fourier Transform (STFT)', xaxis: { title: { text: 'Time (s)' } }, yaxis: { title: { text: 'Frequency (Hz)' } } })
 
   analyzed.value = true
 }

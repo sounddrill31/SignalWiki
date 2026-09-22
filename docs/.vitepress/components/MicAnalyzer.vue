@@ -261,12 +261,12 @@ const updatePlots = (res, xData) => {
 
   // Use newPlot instead of react to force a hard draw from scratch
   window.Plotly.newPlot(timeDiv.value, [{ x: tSub, y: xSub, type: 'scatter', mode: 'lines', line: { color: 'var(--vp-c-brand-1)' } }], 
-    { ...layoutBase, title: 'Time Domain', yaxis: { range: [-1, 1] } },
+    { ...layoutBase, title: 'Time Domain', xaxis: { title: { text: 'Time (s)' } }, yaxis: { title: { text: 'Amplitude' }, range: [-1, 1] } },
     { responsive: true }
   )
 
   window.Plotly.newPlot(freqDiv.value, [{ x: res.freq, y: res.fftMagnitude, type: 'scatter', mode: 'lines', line: { color: 'var(--vp-c-success-1)' } }], 
-    { ...layoutBase, title: 'Frequency Domain (FFT)' },
+    { ...layoutBase, title: 'Frequency Domain (FFT)', xaxis: { title: { text: 'Frequency (Hz)' } }, yaxis: { title: { text: 'Magnitude' } } },
     { responsive: true }
   )
 
@@ -283,7 +283,7 @@ const updatePlots = (res, xData) => {
   }
 
   window.Plotly.newPlot(stftDiv.value, [{ x: res.stftTime, y: res.stftFreq, z: zMatrix, type: 'heatmap', colorscale: 'Viridis' }], 
-    { ...layoutBase, title: 'Short-Time Fourier Transform (STFT)' },
+    { ...layoutBase, title: 'Short-Time Fourier Transform (STFT)', xaxis: { title: { text: 'Time (s)' } }, yaxis: { title: { text: 'Frequency (Hz)' } } },
     { responsive: true }
   )
 }
