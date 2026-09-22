@@ -260,7 +260,13 @@ const updatePlots = (res, xData) => {
   const xSub = xData.filter((_, i) => i % step === 0)
 
   // Use newPlot instead of react to force a hard draw from scratch
-  window.Plotly.newPlot(timeDiv.value, [{ x: tSub, y: xSub, type: 'scatter', mode: 'lines', line: { color: 'var(--vp-c-brand-1)' } }], 
+  window.Plotly.newPlot(timeDiv.value, [{ 
+    x: res.t, 
+    y: xData, 
+    type: 'scattergl', // <-- Use WebGL for large datasets
+    mode: 'lines', 
+    line: { color: 'var(--vp-c-brand-1)' } 
+    }],
     { ...layoutBase, title: 'Time Domain', xaxis: { title: { text: 'Time (s)' } }, yaxis: { title: { text: 'Amplitude' }, range: [-1, 1] } },
     { responsive: true }
   )
